@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday My Love!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js for music generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap');
+
+        body {
+            background: radial-gradient(circle, #fbc2eb 0%, #a6c1ee 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            perspective: 1000px;
+        }
+
+        /* --- The Gift Box Container --- */
+        .gift-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .gift-container:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- The Box Body --- */
+        .box-body {
+            position: absolute;
+            bottom: 0;
+            width: 200px;
+            height: 150px;
+            background: #ff4757;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            transition: opacity 0.3s ease-out; /* Added fade-out transition */
+        }
+
+        /* Vertical Ribbon on Body */
+        .box-body::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            background: #ffd700;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- The Box Lid --- */
+        .box-lid {
+            position: absolute;
+            top: 50px; /* Aligns with top of body initially */
+            width: 220px;
+            height: 50px;
+            background: #ff6b81;
+            left: -10px; /* Centers lid since it's wider */
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 20;
+            transform-origin: top;
+            /* Updated transition to include both transform and delayed opacity for fade-out */
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out 0.3s;
+        }
+
+        /* Vertical Ribbon on Lid */
+        .box-lid::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            background: #ffd700;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Horizontal Ribbon on Lid */
+        .box-lid::after {
+            content: '';
+            position: absolute;
+            height: 30px;
+            width: 100%;
+            background: #ffd700;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* The Bow on top */
+        .box-bow {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 40px;
+            z-index: 25;
+            /* Updated transition to include both transform and delayed opacity for fade-out */
+            transition: transform 0.6s ease, opacity 0.3s ease-out 0.3s;
+        }
+
+        .box-bow::before, .box-bow::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 5px solid #ffd700;
+            border-radius: 50% 50% 0 50%;
+            transform: rotate(45deg);
+            background: transparent;
+        }
+
+        .box-bow::after {
+            left: 35px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+        }
+
+        /* --- The Cake --- */
+        .cake {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px) scale(0.5);
+            width: 150px;
+            height: 120px;
+            background: #fce4ec; /* Reverted to Vanilla sponge */
+            border-radius: 10px;
+            z-index: 30; 
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            box-shadow: inset 0 -15px 0 #f8bbd0, 0 5px 10px rgba(0,0,0,0.1); /* Reverted to pink bottom */
+        }
+
+        .cake-layer-middle {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 10px;
+            background: #ff80ab; /* Reverted to pink */
+        }
+
+        .cake-icing {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 30px;
+            background: #ff80ab; /* Reverted to pink */
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .cake-icing::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 100%;
+            height: 20px;
+            background: radial-gradient(circle, #ff80ab 50%, transparent 50%); /* Reverted to pink */
+            background-size: 20px 20px;
+        }
+
+        /* Candles (General Style) */
+        .candle {
+            position: absolute;
+            top: -25px;
+            width: 10px;
+            height: 30px;
+            border-radius: 2px;
+        }
+
+        /* Individual Candle Colors (Kept for contrast) */
+        .c-1 { background: linear-gradient(to bottom, #fff, #ff6b81); } /* Pink/Red */
+        .c-2 { background: linear-gradient(to bottom, #fff, #ffd700); } /* Yellow/Gold */
+        .c-3 { background: linear-gradient(to bottom, #fff, #2196f3); } /* Blue */
+        .c-4 { background: linear-gradient(to bottom, #fff, #4caf50); } /* Green */
+        .c-5 { background: linear-gradient(to bottom, #fff, #9c27b0); } /* Purple */
+
+        /* Equidistant Positioning for 5 candles (Cake is 150px wide) */
+        /* Positions are calculated as a percentage of cake width, minus half the candle width (5px) for centering. */
+        .c-1 { left: calc(10% - 5px); } 
+        .c-2 { left: calc(30% - 5px); }
+        .c-3 { left: calc(50% - 5px); }
+        .c-4 { left: calc(70% - 5px); }
+        .c-5 { left: calc(90% - 5px); }
+
+        .flame {
+            position: absolute;
+            top: -12px;
+            left: 50%; /* Center relative to the 10px candle width */
+            transform: translateX(-50%);
+            width: 10px;
+            height: 15px;
+            background: #ff9800;
+            border-radius: 50% 50% 20% 20%;
+            animation: flicker 0.5s infinite alternate;
+            box-shadow: 0 0 10px #ffeb3b;
+        }
+
+        /* --- The Banner --- */
+        .banner {
+            position: absolute;
+            top: -120px; /* Above the cake */
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 50px;
+            white-space: nowrap;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #d81b60;
+            border: 2px solid #ffd700;
+            z-index: 35; /* Higher z-index */
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            transition-delay: 0.5s; /* Wait for cake to pop */
+        }
+        
+        .banner::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #ffd700 transparent transparent transparent;
+        }
+
+        /* --- Click Instruction Text --- */
+        .instruction {
+            position: absolute;
+            bottom: -60px;
+            width: 100%;
+            text-align: center;
+            color: #555;
+            font-weight: 600;
+            animation: bounce 2s infinite;
+        }
+
+        /* --- Animation States --- */
+        
+        /* State: OPEN */
+        .gift-container.open .box-lid {
+            transform: rotateX(-110deg) translateY(-20px);
+            opacity: 0; /* Make lid disappear */
+        }
+        
+        .gift-container.open .box-bow {
+             transform: rotateX(-110deg) translateY(-20px) translateZ(-10px);
+             opacity: 0; /* Make bow disappear */
+        }
+        
+        .gift-container.open .box-body {
+             opacity: 0; /* Make body disappear */
+        }
+
+
+        .gift-container.open .cake {
+            /* Adjusted translateY to put the cake on the 'floor' */
+            transform: translateX(-50%) translateY(-20px) scale(1);
+            opacity: 1;
+        }
+
+        .gift-container.open .banner {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+            top: -150px; /* Adjusted to float nicely above the cake */
+        }
+
+        .gift-container.open .instruction {
+            opacity: 0;
+        }
+
+        /* --- Keyframes --- */
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(0.9); opacity: 0.8; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Confetti Canvas */
+        #confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti"></canvas>
+
+    <div class="gift-container" id="giftBox">
+        <!-- Banner Message -->
+        <div class="banner">
+            Happy Birthday My Love! ❤️
+        </div>
+
+        <!-- The Cake -->
+        <div class="cake">
+            <div class="cake-icing"></div>
+            <div class="cake-layer-middle"></div>
+            
+            <!-- Candles added here -->
+            <div class="candle c-1">
+                <div class="flame"></div>
+            </div>
+            <div class="candle c-2">
+                <div class="flame"></div>
+            </div>
+            <div class="candle c-3">
+                <div class="flame"></div>
+            </div>
+            <div class="candle c-4">
+                <div class="flame"></div>
+            </div>
+            <div class="candle c-5">
+                <div class="flame"></div>
+            </div>
+            
+        </div>
+
+        <!-- The Gift Box -->
+        <div class="box-lid">
+            <div class="box-bow"></div>
+        </div>
+        <div class="box-body"></div>
+        
+        <div class="instruction">Tap to open!</div>
+    </div>
+
+    <script>
+        const giftBox = document.getElementById('giftBox');
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let confetti = [];
+        let animationId;
+        let isOpen = false;
+
+        // --- Tone.js Music Setup ---
+        
+        // Simple Synth with a soft tone
+        const melodySynth = new Tone.Synth({
+            oscillator: { type: "sine" }, 
+            envelope: {
+                attack: 0.05,
+                decay: 0.2,
+                sustain: 0.5,
+                release: 1
+            },
+            volume: -8
+        }).toDestination();
+
+        // The melody structure provided by the user, with calculated timing (m:b:s format)
+        // Assuming 4/4 time and 120 BPM (Quarter Note = 0.5s)
+        const happyBirthdayMelody = [
+            // Measure 1 (Happy birthday to)
+            { note: 'G4', duration: '8n', time: "0:0:0" },  // 0.5 beats (G)
+            { note: 'G4', duration: '8n', time: "0:0:2" },  // 0.5 beats (G)
+            { note: 'A4', duration: '4n', time: "0:1:0" },  // 1 beat (A)
+            { note: 'G4', duration: '4n', time: "0:2:0" },  // 1 beat (G)
+            { note: 'C5', duration: '4n', time: "0:3:0" },  // 1 beat (C)
+            
+            // Measure 2 (you, Happy birthday to)
+            { note: 'B4', duration: '4n', time: "1:0:0" },  // 1 beat (B)
+            { note: 'G4', duration: '8n', time: "1:1:0" },  // 0.5 beats (G)
+            { note: 'G4', duration: '8n', time: "1:1:2" },  // 0.5 beats (G)
+            { note: 'A4', duration: '4n', time: "1:2:0" },  // 1 beat (A)
+            { note: 'G4', duration: '4n', time: "1:3:0" },  // 1 beat (G)
+            
+            // Measure 3 (you, Happy birthday dear)
+            { note: 'D5', duration: '4n', time: "2:0:0" },  // 1 beat (D)
+            { note: 'C5', duration: '4n', time: "2:1:0" },  // 1 beat (C)
+            { note: 'G4', duration: '8n', time: "2:2:0" },  // 0.5 beats (G)
+            { note: 'G4', duration: '8n', time: "2:2:2" },  // 0.5 beats (G)
+            { note: 'G5', duration: '4n', time: "2:3:0" },  // 1 beat (G)
+            
+            // Measure 4 (NAME)
+            { note: 'E5', duration: '4n', time: "3:0:0" },  // 1 beat (E)
+            { note: 'C5', duration: '4n', time: "3:1:0" },  // 1 beat (C)
+            { note: 'B4', duration: '4n', time: "3:2:0" },  // 1 beat (B)
+            { note: 'A4', duration: '4n', time: "3:3:0" },  // 1 beat (A)
+            
+            // Measure 5 (Happy birthday to you)
+            { note: 'F5', duration: '8n', time: "4:0:0" },  // 0.5 beats (F)
+            { note: 'F5', duration: '8n', time: "4:0:2" },  // 0.5 beats (F)
+            { note: 'E5', duration: '4n', time: "4:1:0" },  // 1 beat (E)
+            { note: 'C5', duration: '4n', time: "4:2:0" },  // 1 beat (C)
+            { note: 'D5', duration: '4n', time: "4:3:0" },  // 1 beat (D)
+            
+            // Measure 6 (Final Note)
+            { note: 'C5', duration: '2n', time: "5:0:0" }   // 2 beats (C) - sustained
+        ];
+
+        const melodyPart = new Tone.Part((time, value) => {
+            melodySynth.triggerAttackRelease(value.note, value.duration, time);
+        }, happyBirthdayMelody);
+
+        // --- Configuration for Looping ---
+        melodyPart.loop = true;
+        // The melody lasts 5 full measures plus 2 beats, represented as '5:2' in Tone.js time format (measures:beats:subdivisions).
+        melodyPart.loopEnd = '5:2'; 
+
+        function playMusic() {
+            // Must resume audio context on user interaction
+            if (Tone.context.state !== 'running') {
+                Tone.context.resume();
+            }
+            
+            Tone.Transport.bpm.value = 120; // Set tempo
+            melodyPart.start(0);
+            Tone.Transport.start();
+        }
+
+        // --- Confetti and UI Logic ---
+
+        // Resize canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Confetti Particle Class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = -10;
+                this.size = Math.random() * 10 + 5;
+                this.speedY = Math.random() * 3 + 2;
+                this.speedX = Math.random() * 2 - 1;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 5 - 2.5;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+                if (this.y > canvas.height) {
+                    this.y = -10;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(0, 0, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function startConfetti() {
+            // Create particles
+            for (let i = 0; i < 100; i++) {
+                confetti.push(new Particle());
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confetti.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            animationId = requestAnimationFrame(animateConfetti);
+        }
+
+        // Interaction Logic
+
+        giftBox.addEventListener('click', () => {
+            if (!isOpen) {
+                // Open the box
+                giftBox.classList.add('open');
+                isOpen = true;
+                
+                // Start music and confetti after a short delay
+                setTimeout(() => {
+                    playMusic();
+                    startConfetti();
+                }, 400); 
+            }
+            // If it's already open, do nothing.
+        });
+
+    </script>
+</body>
+</html>
